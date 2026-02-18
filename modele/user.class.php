@@ -31,6 +31,13 @@ class User
         $this->role = $role;
     }
 
+    public function getAllAttributes(): array {
+        return array(
+            array("firstName", "lastName", "email", "password", "phone", "address", "role"),
+            array($this->firstName, $this->lastName, $this->email, $this->password, $this->phone, $this->address, $this->role)
+        );
+    }
+
     // Getters and Setters for $id
     public function getId(): int
     {

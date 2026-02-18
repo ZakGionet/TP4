@@ -4,8 +4,8 @@
 	interface ConfigBD
 	{	
 		const BD_HOTE = "localhost";
-		const BD_UTILISATEUR = "";
-		const BD_MOT_PASSE = "";
-		const BD_NOM = "";    
+		const BD_UTILISATEUR = "onlineshop_admin";
+		const BD_MOT_PASSE = "admin";
+		const BD_NOM = "onlineshop";    
 	}
 ?>

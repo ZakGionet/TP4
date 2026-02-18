@@ -4,7 +4,7 @@ CREATE DATABASE onlineShop CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE onlineShop;
 
 -- Création de la table des produits
-CREATE TABLE products (
+CREATE TABLE Products (
     id INT AUTO_INCREMENT PRIMARY KEY, -- Ajout de AUTO_INCREMENT pour générer automatiquement les IDs
     name VARCHAR(255) NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE products (
 );
 
 -- Création de la table des caractéristiques
-CREATE TABLE features (
+CREATE TABLE Features (
     id INT AUTO_INCREMENT PRIMARY KEY,
     product_id INT NOT NULL,
     feature TEXT NOT NULL,
@@ -116,28 +116,28 @@ DROP TABLE IF EXISTS Role;
 
 -- Create the Role table
 CREATE TABLE Role (
-    RoleID INT AUTO_INCREMENT PRIMARY KEY,
-    RoleName VARCHAR(50) NOT NULL UNIQUE
+    roleID INT AUTO_INCREMENT PRIMARY KEY,
+    roleName VARCHAR(50) NOT NULL UNIQUE
 );
 
 -- Create the User table
 CREATE TABLE User (
     UserID INT AUTO_INCREMENT PRIMARY KEY,
-    FirstName VARCHAR(50) NOT NULL,
-    LastName VARCHAR(50) NOT NULL,
-    Email VARCHAR(100) NOT NULL UNIQUE,
+    firstName VARCHAR(50) NOT NULL,
+    lastName VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
     Password VARCHAR(255) NOT NULL,
-    Phone VARCHAR(15),
+    phone VARCHAR(15),
     Address VARCHAR(255),
-    RoleID INT NOT NULL,
-    FOREIGN KEY (RoleID) REFERENCES Role(RoleID)
+    roleID INT NOT NULL,
+    FOREIGN KEY (roleID) REFERENCES Role(roleID)
 );
 
 -- Insert data into Role table
-INSERT INTO Role (RoleName) VALUES ('Admin'), ('Seller'), ('Customer');
+INSERT INTO Role (roleName) VALUES ('Admin'), ('Seller'), ('Customer');
 
 -- Insert data into User table
-INSERT INTO User (FirstName, LastName, Email, Password, Phone, Address, RoleID) 
+INSERT INTO User (firstName, lastName, email, password, phone, address, roleID) 
 VALUES 
     -- Admins
     ('John', 'Smith', 'john.smith@example.com', 'hashedpassword1', '1234567890', '123 Main St, City A', 1),

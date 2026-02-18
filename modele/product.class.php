@@ -114,6 +114,13 @@ class Product
         return $this->features;
     }
 
+    // get all attribut
+    public function getAllAttributes(): array {
+        return array(
+            array("name", "price", "image", "category", "desription", "quantity"),
+            array($this->name, $this->price, $this->image, $this-> category, $this->description, $this-> quantity));
+    }
+
     public function __toString(): string
     {
         return sprintf(
