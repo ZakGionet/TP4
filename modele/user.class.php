@@ -10,8 +10,8 @@ class User
     private ?string $address;
     private Role $role;
 
-       // Constructor
-       public function __construct(
+    // Constructor
+    public function __construct(
         ?int $id,
         string $firstName,
         string $lastName,

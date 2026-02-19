@@ -13,51 +13,116 @@ class UserDAO implements DAO {
 static public function findById(int $id): ?object {
     $pdo = ConnexionBD::getInstance();
 
-    $sql = "SELECT * FROM User WHERE id = :id";
+    $sql = "SELECT * 
+            FROM User 
+            INNER JOIN Role ON User.roleId = Role.roleID
+            WHERE UserID = :id";
 
     $statement = $pdo->prepare($sql);
     $statement->bindValue(":id", $id, PDO::PARAM_INT);
     $statement->execute();
 
+    $data = $statement->fetch(PDO::FETCH_ASSOC);
 
-    return $statement->fetchObject("User");
+    if ($data) {
+        return new User(
+            $data['UserID'],
+            $data['firstName'],
+            $data['lastName'],
+            $data['email'],
+            $data['Password'],
+            $data['phone'],
+            $data['Address'],
+            new Role($data['roleID'], $data['roleName']),
+        );
+    }
+    
+    return null;
 
 }
 
 static public function findAll(): array {
     $pdo = ConnexionBD::getInstance();
 
-    $sql = "SELECT * FROM User";
-    $statement = $pdo->prepare($sql);
-    $statement->execute();
+    $sql = "SELECT * FROM User INNER JOIN Role ON User.roleId = Role.roleID";
+    $data = $pdo->query($sql);
 
-    return $statement->fetchAll(PDO::FETCH_OBJ, "User");
+    $userArr = array();
+    if ($data) {
+        foreach ($data as $user) {
+            $userArr[] = new User(
+                $user['UserID'],
+                $user['firstName'],
+                $user['lastName'],
+                $user['email'],
+                $user['Password'],
+                $user['phone'],
+                $user['Address'],
+                new Role($user['roleID'], $user['roleName'])
+            );
+        }
+    }
+    
+    return $userArr;
 }
 
 static public function findByDescription(string $filter): array {
     $pdo = ConnexionBD::getInstance();
 
-    $sql = "SELECT * FROM User ";
+    $sql = "SELECT * FROM User INNER JOIN Role ON User.roleID = Role.roleID ";
 
-    // even a vibe coder wouldn't let this happen
-    $sql .= $filter;
+    // this is great I am ok with this
+    $sql .= $filter ;
 
-    $statement = $pdo->prepare($sql);
-    $statement->execute();
 
-    return $statement->fetchAll(PDO::FETCH_OBJ, "User");
+    $query = $pdo->query($sql);
+
+    $data = $query->fetchAll();
+
+    $userArr = array();
+    if ($data) {
+        foreach ($data as $user) {
+            $userArr[] = new User(
+                $user['UserID'],
+                $user['firstName'],
+                $user['lastName'],
+                $user['email'],
+                $user['Password'],
+                $user['phone'],
+                $user['Address'],
+                new Role($user['roleID'], $user['roleName'])
+            );
+        }
+    }
+    
+    return array();
 }
 
 static public function findByEmail(string $email): ?object {
     $pdo = ConnexionBD::getInstance();
 
-    $sql = "SELECT * FROM User WHERE email = :email";
+    $sql = "SELECT * FROM User INNER JOIN Role On User.roleID = Role.roleID WHERE email = :email";
 
     $statement = $pdo->prepare($sql);
     $statement->bindValue(":email", $email, PDO::PARAM_STR);
     $statement->execute();
 
-    return $statement->fetchObject("User");
+    $data = $statement->fetch(PDO::FETCH_ASSOC);
+
+    if ($data) {
+        return new User(
+            $data['UserID'],
+            $data['firstName'],
+            $data['lastName'],
+            $data['email'],
+            $data['Password'],
+            $data['phone'],
+            $data['Address'],
+            new Role($data['roleID'], $data['roleName'])
+        );
+    }
+    
+    return null;
 }
 
 static public function existsByEmail(string $email): bool {
@@ -73,42 +138,37 @@ static public function existsByEmail(string $email): bool {
 }
 
 static public function save(object $object): bool {
+    if (UserDAO::existsByEmail($object->getEmail())) { return false; }
+
     $pdo = ConnexionBD::getInstance();
 
     $sql = "INSERT INTO User 
-                (firstName, lastName, email, password, phone, address, role) 
+                    (firstName,  lastName,  email,  Password,  phone,  Address,  roleID) 
             VALUES (:firstName, :lastName, :email, :password, :phone, :address, :role)";
 
     $statement = $pdo->prepare($sql);
-    
-    try {
-        $attributes = $object->getAllAttributes();
-    }
-    catch (Exception $e) {
-        return false;
-    }
 
-    for ($i = 0; $i < 7; $i++) {
-        // il me semble le User constructor ne prendrait pas null comme param pour Role
-        if ($attributes[0][$i] == 'role') {
-            $roleValue = ($attributes[1][$i] == null) ? 3 : $attributes[1][$i]->getId;
-            $statement->bindValue(":role", $roleValue, PDO::PARAM_INT);
-        }
-        else if ($attributes[0][$i] == 'password') {
-            $passwordValue = UserDAO::checkAndHashPassword($attributes[1][$i]);
-            if (!$passwordValue) { return false; }
-            $statement->bindValue(":password", $passwordValue, PDO::PARAM_STR);
-        }
-        else {
-            $statement->bindValue(":".$attributes[0][$i], $attributes[1][$i], PDO::PARAM_INT);
-        }
+    $statement->bindValue(":firstName", $object->getFirstName());
+    $statement->bindValue(":lastName", $object->getLastName());
+    $hashedPw = $object->getPassword();
+    if (strlen($hashedPw) < 60) {
+        $hashedPw = password_hash($hashedPw, PASSWORD_BCRYPT);
     }
+    if (!$hashedPw) { return false; }
+    $statement->bindValue(":password", $object->getPassword());
 
-    return $statement->execute();
-}
+    $statement->bindValue(":phone", $object->getPhone());
+    $statement->bindValue(":address", $object->getAddress());
+    $statement->bindValue(":role", ($object->getRole()) ? $object->getRole()->getId() : 3);
+    $statement->bindValue(":email", $object->getEmail());
 
-static private function checkAndHashPassword(string $pw): string {
-    return (strlen($pw) < 60) ? password_hash($pw, PASSWORD_BCRYPT) : $pw;
+    $execResult = $statement->execute();
+    if ($execResult) { 
+        if ($object->getRole() == null) { $object->setRole(new Role(3, "Client")); }
+        if (strlen($object->getPassword())) { $object->setPassword($hashedPw); }
+        $object->setId($pdo->lastInsertId());
+    }
+    return $execResult;
 }
 
 static public function update(object $object): bool {
@@ -116,43 +176,33 @@ static public function update(object $object): bool {
 
     $sql = "UPDATE User 
             SET firstName = :firstName, 
-                lastName = :lastName, 
-                email = :email, 
-                password = :password, 
-                phone = :phone, 
-                address = :address, 
-                role = :role
-            WHERE id = :id";
+                lastName  = :lastName, 
+                Password  = :password, 
+                phone     = :phone, 
+                Address   = :address, 
+                roleID      = :role
+            WHERE email = :email";
 
     $statement = $pdo->prepare($sql);
     
-    try {
-        $attributes = $object->getAllAttributes();
-        $userId = $object->getId();
+    // i give up
+    $statement->bindValue(":firstName", $object->getFirstName());
+    $statement->bindValue(":lastName", $object->getLastName());
+    $hashedPw = $object->getPassword();
+    if (strlen($hashedPw) < 60) {
+        $hashedPw = password_hash($hashedPw, PASSWORD_BCRYPT);
     }
-    catch (Exception $e) {
-        return false;
-    }
+    if (!$hashedPw) { return false; }
+    $statement->bindValue(":password", $object->getPassword());
 
-    $statement->bindValue(":id", $userId, PDO::PARAM_INT);
-
-    for ($i = 0; $i < 7; $i++) {
-        // il me semble le User constructor ne prendrait pas null comme param pour Role
-        if ($attributes[0][$i] == 'role') {
-            $statement->bindValue(":role", $attributes[1][$i]->getId(), PDO::PARAM_INT);
-        }
-        else if ($attributes[0][$i] == 'password') {
-            $passwordValue = UserDAO::checkAndHashPassword($attributes[1][$i]);
-            if (!$passwordValue) { return false; }
-            $statement->bindValue(":password", $passwordValue, PDO::PARAM_STR);
-        }
-        else {
-            $statement->bindValue(":".$attributes[0][$i], $attributes[1][$i], PDO::PARAM_INT);
-        }
-    }
+    $statement->bindValue(":phone", $object->getPhone());
+    $statement->bindValue(":address", $object->getAddress());
+    $statement->bindValue(":role", ($object->getRole()) ? $object->getRole()->getId() : 3);
+    $statement->bindValue(":email", $object->getEmail());
 
     return $statement->execute();
 }
+
 static public function delete(object $object): bool {
     $pdo = ConnexionBD::getInstance();
 
@@ -163,9 +213,10 @@ static public function delete(object $object): bool {
         return false;
     }
 
-    $sql = "DELETE FROM User WHERE id = :id";
+    $sql = "DELETE FROM User WHERE UserID = :id";
     $statement = $pdo->prepare($sql);
     $statement->bindValue(":id", $userId);
+
     return $statement->execute();
 }
   

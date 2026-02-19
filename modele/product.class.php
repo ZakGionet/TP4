@@ -117,7 +117,7 @@ class Product
     // get all attribut
     public function getAllAttributes(): array {
         return array(
-            array("name", "price", "image", "category", "desription", "quantity"),
+            array("name", "price", "image", "category", "description", "quantity"),
             array($this->name, $this->price, $this->image, $this-> category, $this->description, $this-> quantity));
     }
 

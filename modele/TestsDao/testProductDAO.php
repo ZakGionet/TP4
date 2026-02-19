@@ -77,8 +77,8 @@
                 <td> <?php
                 echo "<h3>Recherche de l'item avec l'ID 1 (existe):</h3>";
                 // Remplacez null par l'appel de la méthode
-                $unProduit = null;
-                echo "<ul><li>Produit 1: " . ($unProduit ? $unProduit : "n'existe pas") . "</li></ul>";
+                $unProduit = ProductDAO::findById(1);
+                echo "<ul><li>Produit 1: " . ($unProduit ?: 'Pas trouvé') . "</li></ul>";
 
                 echo "<h3>Recherche de l'item avec l'ID 999 (n'existe pas):</h3>";
                     // Remplacez null par l'appel de la méthode
@@ -94,7 +94,7 @@
                     <?php
                     echo "<h3>Liste de tous les produits:</h3>";
                         // Remplacez [] par l'appel de la méthode
-                    $tabProduits = [];
+                    $tabProduits = ProductDao::findAll();
                     echo "<ul>";
                     foreach ($tabProduits as $produit) {
                         echo "<li>$produit</li>";
@@ -115,7 +115,7 @@
                     <?php
                     echo "<h3>Recherche des produits contenant 'vidéo' dans la description:</h3>";
                       // Remplacez [] par l'appel de la méthode
-                    $tabProduits = [];
+                    $tabProduits = ProductDAO::findByDescription("WHERE description LIKE '%vidéo%'");
                     echo "<ul>";
                     foreach ($tabProduits as $produit) {
                         echo "<li>$produit</li>";
@@ -136,7 +136,7 @@
                     echo "<h3>Insertion d'un nouveau produit (ID généré automatiquement):</h3>";
                     $nouveauProduit = new Product(null, 'Produit Test Save', 59.99, 'test.png', 'tests', 'Produit pour tester save', 20);
                     // Remplacez false par l'appel de la méthode
-                    $testSave = false;
+                    $testSave = ProductDAO::save($nouveauProduit);
 
                     if ($testSave) {
                         echo "<ul><li>Insertion réussie. ID généré : " . $nouveauProduit->getId() . "</li></ul>";
@@ -153,17 +153,18 @@
                 <td>
                     <?php
                     echo "<h3>Modification du produit inséré :</h3>";
+
                     $nouveauProduit->setPrice(99.99);
                     $nouveauProduit->setDescription("Description mise à jour");
                     $nouveauProduit->setQuantity(50);
                    // Remplacez false par l'appel de la méthode
-                    $testUpdate = false;
+                    $testUpdate = ProductDAO::update($nouveauProduit);
 
                     if ($testUpdate) {
                         echo "<ul><li>Modification réussie pour le produit avec ID : " . $nouveauProduit->getId() . "</li></ul>";
                             // Remplacez null par l'appel de la méthode
                         // Vérification de la modification
-                        $produitModifie = null;
+                        $produitModifie = ProductDAO::findById($nouveauProduit->getId());
                         echo "<ul><li>Produit modifié : " . ($produitModifie ? $produitModifie : "n'existe pas") . "</li></ul>";
                     } else {
                         echo "<ul><li>Modification échouée.</li></ul>";
@@ -180,13 +181,13 @@
                     <?php
                     echo "<h3>Suppression du produit inséré :</h3>";
                         // Remplacez false par l'appel de la méthode
-                    $testDelete = false;
+                    $testDelete = ProductDAO::delete($produitModifie);
 
                     if ($testDelete) {
                         echo "<ul><li>Suppression réussie pour le produit avec ID : " . $nouveauProduit->getId() . "</li></ul>";
                             // Remplacez null par l'appel de la méthode
                         // Vérification de la suppression
-                        $produitSupprime = null;
+                        $produitSupprime = $produitModifie;
                         echo "<ul><li>Produit supprimé : " . ($produitSupprime ? $produitSupprime : "n'existe plus") . "</li></ul>";
                     } else {
                         echo "<ul><li>Suppression échouée.</li></ul>";

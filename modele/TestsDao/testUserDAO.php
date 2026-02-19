@@ -79,12 +79,12 @@
                     <?php
                     echo "<h3>Recherche de l'utilisateur avec l'ID 1 (existe):</h3>";
                     // Remplacez null par l'appel de la méthode
-                    $unUser = null;
+                    $unUser = UserDAO::findById(1);
                     echo "<ul><li>Utilisateur 1: " . ($unUser ? $unUser : "n'existe pas") . "</li></ul>";
 
                     echo "<h3>Recherche de l'utilisateur avec l'ID 999 (n'existe pas):</h3>";
                   // Remplacez null par l'appel de la méthode
-                    $unUser = null;
+                    $unUser = UserDAO::findById(999);;
                     echo "<ul><li>Utilisateur 999: " . ($unUser ? $unUser : "n'existe pas") . "</li></ul>";
                     ?>
                 </td>
@@ -97,7 +97,7 @@
                     <?php
                     echo "<h3>Liste de tous les utilisateurs:</h3>";
                 // Remplacez [] par l'appel de la méthode
-                    $tabUsers = [];
+                    $tabUsers = UserDAO::findAll();
                     echo "<ul>";
                     foreach ($tabUsers as $user) {
                         echo "<li>$user</li>";
@@ -114,12 +114,12 @@
                     <?php
                     echo "<h3>Recherche de l'utilisateur avec l'email :sophia.taylor@example.com (existe):</h3>";
                    // Remplacez null par l'appel de la méthode
-                    $unUser = null;
+                    $unUser = UserDAO::existsByEmail("sophia.taylor@example.com");
                     echo "<ul><li>Utilisateur : " . ($unUser ? $unUser : "n'existe pas") . "</li></ul>";
 
                     echo "<h3>Recherche de l'utilisateur avec l'email sophia999.taylor@example.com (n'existe pas):</h3>";
                  // Remplacez null par l'appel de la méthode
-                    $unUser = null;
+                    $unUser = UserDAO::existsByEmail("sophia999.taylor@example.com");
                     echo "<ul><li>Utilisateur : " . ($unUser ? $unUser : "n'existe pas") . "</li></ul>";
                     ?>
                 </td>
@@ -130,14 +130,14 @@
                 </td>
                 <td>
                     <?php
-                    echo "<h3>Vérifie l'existance de l'email :sophia.taylor@example.com (existe):</h3>";
+                    echo "<h3>Vérifie l'existance de l'email :1test10.user@example.com (existe):</h3>";
                 // Remplacez false par l'appel de la méthode
-                    $test = false;
+                    $test = UserDAO::existsByEmail("1test10.user@example.com");
                     echo "<ul><li>L'email: " . ($test? "existe déjà" : "n'existe pas") . "</li></ul>";
 
                     echo "<h3>Vérifie l'existance de l'email sophia999.taylor@example.com (n'existe pas):</h3>";
                  // Remplacez false par l'appel de la méthode
-                    $test = false;
+                    $test = UserDAO::existsByEmail("sophia999.taylor@example.com");
                     echo "<ul><li>L'email: " . ($test? "existe" : "n'existe pas") . "</li></ul>";
                     ?>
                 </td>
@@ -154,13 +154,13 @@
                     $role = new Role(3, "Customer");
 
                     // Création d'un nouvel utilisateur
-                    $nouveauUser = new User(null, 'Test', 'User', 'test10.user@example.com', 'plainpassword10', '1234567890', '123 Test St', $role);
+                    $nouveauUser = new User(null, '1Test', 'User', '1test10.user@example.com', 'plainpassword10', '1234567890', '123 Test St', $role);
 
                     // Récupération de l'email et du mot de passe en clair
                     $email = $nouveauUser->getEmail();
                     $plainTextPassword = $nouveauUser->getPassword();
                     // Remplacez false par l'appel de la méthode
-                    $test = false;
+                    $test = UserDAO::save($nouveauUser);
                     // Vérification si l'utilisateur existe déjà
                     if ($test) {
                         echo "L'utilisateur avec l'email ", $nouveauUser->getEmail(), " existe déjà.";
@@ -171,14 +171,14 @@
 
                             // Enregistrement dans la base de données
                            // Remplacez false par l'appel de la méthode
-                            $testSave = false;
+                            $testSave = UserDAO::save($nouveauUser);
 
                             if ($testSave) {
                                 echo "<ul><li>Insertion réussie. ID généré : " . $nouveauUser->getId() . "</li></ul>";
 
                                 // Vérification des données insérées
                          // Remplacez null par l'appel de la méthode
-                                $userInsere = null;
+                                $userInsere = UserDAO::findByEmail("test10.user@example.com");
                                 echo "<ul><li>Utilisateur inséré : " . ($userInsere ? $userInsere : "n'existe pas") . "</li></ul>";
                             } else {
                                 echo "<ul><li>Insertion échouée.</li></ul>";
@@ -201,7 +201,7 @@
                     // Utiliser l'email de l'utilisateur nouvellement créé pour la mise à jour
                     $email = $nouveauUser->getEmail(); // Email de l'utilisateur nouvellement inséré
                  // Remplacez null par l'appel de la méthode
-                    $nouveauUserAuthentifie = null; // Recherche de l'utilisateur par email
+                    $nouveauUserAuthentifie = UserDAO::findByEmail($email); // Recherche de l'utilisateur par email
                     
                     if ($nouveauUserAuthentifie !== null) {
                         echo "<h3>Modification de l'utilisateur authentifié :</h3>";
@@ -213,14 +213,14 @@
 
                         // Appeler la méthode update
                         // Remplacez false par l'appel de la méthode
-                        $testUpdate = false;
+                        $testUpdate = UserDAO::update($nouveauUserAuthentifie);
 
                         if ($testUpdate) {
                             echo "<ul><li>Modification réussie pour l'utilisateur avec ID : " . $nouveauUserAuthentifie->getId() . "</li></ul>";
 
                             // Vérification des modifications
                     // Remplacez null par l'appel de la méthode
-                            $userModifie = null;
+                            $userModifie = UserDAO::findByDescription("WHERE firstName = 'Updated'");
                             echo "<ul><li>Utilisateur modifié : " . ($userModifie ? $userModifie : "n'existe pas") . "</li></ul>";
                         } else {
                             echo "<ul><li>Modification échouée.</li></ul>";
@@ -243,21 +243,21 @@
                     // Utiliser l'email de l'utilisateur nouvellement créé pour la suppression
                     $email = $nouveauUser->getEmail(); // Email de l'utilisateur nouvellement inséré
                    // Remplacez null par l'appel de la méthode
-                    $nouveauUserAuthentifie = null; // Recherche de l'utilisateur par email
+                    $nouveauUserAuthentifie = UserDAO::findByEmail($email); // Recherche de l'utilisateur par email
                     
                     if ($nouveauUserAuthentifie !== null) {
                         echo "<h3>Suppression de l'utilisateur authentifié :</h3>";
 
                         // Appeler la méthode delete
                      // Remplacez false par l'appel de la méthode
-                        $testDelete = false;
+                        $testDelete = UserDAO::delete($nouveauUserAuthentifie);
 
                         if ($testDelete) {
                             echo "<ul><li>Suppression réussie pour l'utilisateur avec ID : " . $nouveauUserAuthentifie->getId() . "</li></ul>";
 
                             // Vérification de la suppression
                          // Remplacez null par l'appel de la méthode
-                            $userSupprime = null;
+                            $userSupprime = UserDAO::findByEmail($email);
                             echo "<ul><li>Utilisateur supprimé : " . ($userSupprime ? $userSupprime : "n'existe plus") . "</li></ul>";
                         } else {
                             echo "<ul><li>Suppression échouée.</li></ul>";
