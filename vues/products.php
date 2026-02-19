@@ -127,7 +127,7 @@
         <?php
             // ==================== Utilisation des fonctions d'affichage ===================== 
           
-            afficherProduitsHTML($controleur->getTabProduits());
+            afficherProduitsHTML($controleur->getTableauProduits());
 
             ?>
       </div>
